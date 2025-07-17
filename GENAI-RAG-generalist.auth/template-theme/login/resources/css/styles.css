@@ -1,0 +1,127 @@
+/* Insert your custom css */
+.login-pf body {
+  background: url('../img/fundo-template.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.pf-c-button.pf-m-primary {
+
+  background-color: #DA1921;
+  height: 40px;
+  gap: 10px;
+  font-family: system-ui;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin: auto;
+}
+
+.card-pf {
+  background: none;
+  box-shadow: none;
+  border-top: none;
+  padding-left: 200px;
+  padding-right: 200px;
+  border-color: none;
+  z-index: 1;
+}
+
+#kc-page-title {
+  font-family: system-ui;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: 0.20000000298023224px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.login-pf-header {
+  font-family: system-ui;
+  font-size: 1px;
+  font-weight: 700;
+  line-height: 0px;
+  letter-spacing: 0.20000000298023224px;
+  text-align: left;
+  color: #ffffff;
+}
+
+.form-group {
+  color: #ffffff;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+#username {
+  height: 50px;
+  border: 1px;
+  font-family: system-ui;
+  background-color: #E9E9E9;
+  border: 1px solid #CCD3DF;
+  margin: auto;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19px;
+  letter-spacing: 0em;
+  text-align: left;
+  color: #565D67;
+  margin-left: 0%
+    /* css applied the same as the prototype */
+    /* top: 464.02px;
+  left: 539.8px; */
+    /* border-radius: 5px; */
+    /* width: 360px; */
+}
+
+#password {
+  width: 360px;
+  height: 50px;
+  top: 464.02px;
+  left: 539.8px;
+  border: 1px;
+  background-color: #E9E9E9;
+  border: 1px solid #CCD3DF;
+  margin: auto;
+  color: #565D67;
+  /* css applied the same as the prototype */
+  /* margin-left: 20% */
+  /* border-radius: 5px; */
+}
+
+input:not(:placeholder-shown) {
+  border: none;
+}
+
+pf-c-button pf-m-control {
+  border-radius: 5px;
+  border: 1px;
+  background-color: #E9E9E9;
+  border: 1px solid #CCD3DF;
+  margin: auto;
+  /* css applied the same as the prototype */
+  /* width: 360px;
+  height: 50px;
+  top: 464.02px;
+  left: 539.8px; */
+}
+
+input:placeholder-shown {
+  border: 1px solid #B2BED0;
+  /* css applied the same as the prototype */
+  /* border-color: red; */
+}
+
+pf-c-input-group {
+  border-radius: 5px;
+  border: 1px;
+}
+
+img {
+  margin-top: 5%;
+}
+
+fa fa-eye {
+  background-color: #2E2E2E;
+}

@@ -1,0 +1,25 @@
+version: '3'
+services:
+  keycloak:
+    build: .
+    ports:
+      - 8080:8080
+      - 8443:8443
+    environment:
+      - KC_DB_URL=jdbc:postgresql://postgres-sandbox.cly4oquyimkk.us-east-1.rds.amazonaws.com:5432/INITIAL_DB_NAME
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB_PASSWORD=MASTER_DB_PASSWORD
+      - KC_DB_USERNAME=MASTER_DB_USERNAME
+      - KC_DB=postgres
+    volumes:
+      - ./template-theme:/opt/keycloak/themes/template
+      - ./realm-import-dev-env:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --health-enabled=true
+      - --spi-theme-static-max-age=-1
+      - --spi-theme-cache-themes=false
+      - --spi-theme-cache-templates=false
+      - --import-realm
+      - --features=preview

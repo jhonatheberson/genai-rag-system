@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+    - homolog
+    exclude:
+      - develop
+      - main
+
+variables:
+- ${{ if eq(variables['Build.SourceBranchName'], 'homolog') }}:
+  - group: grp-pipelines-config-hmg
+
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: Docker@2
+  inputs:
+    repository: 'template-keycloak'
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    arguments: '--platform linux/amd64'
+
+
+
+- task: ECRPushImage@1
+  displayName: 'Push image to AKL ECR'
+  inputs:
+    awsCredentials: 'Sentinel_ecr_aws_sc'
+    regionName: 'us-east-1'
+    imageSource: 'imagename'
+    sourceImageName: 'template-keycloak'
+    repositoryName: 'template-keycloak'
+    sourceImageTag: '$(Build.BuildId)'
+    pushTag: '$(Build.BuildId)-$(envName)'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Artifact deployment Bundle'
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/deployment.yml'
+    artifact: 'bundle'
+    publishLocation: 'pipeline'

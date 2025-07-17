@@ -1,0 +1,13 @@
+{
+  "conventionalCommits.scopes": ["template"],
+  "dotnet-test-explorer.testProjectPath": "tests/**/*.csproj",
+  "dotnet-test-explorer.autoWatch": true,
+  "dotnet-test-explorer.showCodeLens": true,
+  "dotnet-test-explorer.codeLensFailed": "❌",
+  "dotnet-test-explorer.codeLensPassed": "✅",
+  "dotnet-test-explorer.enableTelemetry": false,
+  "dotnet.defaultSolution": "DDDTemplate.sln",
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.enableEditorConfigSupport": true,
+  "FSharp.suggestGitignore": false
+}

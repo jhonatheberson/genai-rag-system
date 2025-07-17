@@ -1,0 +1,98 @@
+# This is an example Starter pipeline configuration
+# Use a skeleton to build, test and deploy using manual and parallel steps
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    develop:
+    # The following deployment steps will be executed for each pipeline run. To configure your steps and conditionally deploy see https://support.atlassian.com/bitbucket-cloud/docs/configure-bitbucket-pipelinesyml/
+    - step:
+        name: 'Deploy to development'
+        deployment: test
+        script:
+        # build the image
+        - sed -i "s|__image_tag__|${BITBUCKET_COMMIT}-dev|g" deployment.yml
+        - sed -i 's|__env_name__|dev|g' deployment.yml
+        - sed -i "s|__certificate__|arn:aws:acm:us-east-1:590184135762:certificate/c351b407-05c9-4ae0-9a9c-629b423f3460|g" deployment.yml
+        - docker build -t "template-keycloak:${BITBUCKET_COMMIT}-dev" .
+
+        # use the pipe to push the image to AWS ECR
+        - pipe: atlassian/aws-ecr-push-image:2.4.2
+          variables:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_ECR
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_ECR
+            AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+            IMAGE_NAME: 'template-keycloak'
+            TAGS: ${BITBUCKET_COMMIT}-dev
+
+        - pipe: atlassian/aws-eks-kubectl-run:2.8.1
+          variables:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+            CLUSTER_NAME: 'template-dev-eks'
+            KUBECTL_COMMAND: 'apply'
+            RESOURCE_PATH: 'deployment.yml'
+
+    homolog:
+    # The following deployment steps will be executed for each pipeline run. To configure your steps and conditionally deploy see https://support.atlassian.com/bitbucket-cloud/docs/configure-bitbucket-pipelinesyml/
+    - step:
+        name: 'Deploy to homologation'
+        deployment: staging
+        script:
+        # build the image
+        - sed -i "s|__image_tag__|${BITBUCKET_COMMIT}-hmg|g" deployment-prod.yml
+        - sed -i 's|__env_name__|hmg|g' deployment-prod.yml
+        - sed -i "s|__certificate__|arn:aws:acm:us-east-1:975049891164:certificate/78182cdc-d0a3-4379-b2b4-be309b60db24|g" deployment-prod.yml
+        - docker build -t "template-keycloak:${BITBUCKET_COMMIT}-hmg" .
+
+        # use the pipe to push the image to AWS ECR
+        - pipe: atlassian/aws-ecr-push-image:2.4.2
+          variables:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_ECR
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_ECR
+            AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+            IMAGE_NAME: 'template-keycloak'
+            TAGS: ${BITBUCKET_COMMIT}-hmg
+
+        - pipe: atlassian/aws-eks-kubectl-run:2.8.1
+          variables:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+            CLUSTER_NAME: 'template-hmg-eks'
+            KUBECTL_COMMAND: 'apply'
+            RESOURCE_PATH: 'deployment-prod.yml'
+
+    master:
+    # The following deployment steps will be executed for each pipeline run. To configure your steps and conditionally deploy see https://support.atlassian.com/bitbucket-cloud/docs/configure-bitbucket-pipelinesyml/
+    - step:
+        name: 'Deploy to production'
+        deployment: 'production'
+        script:
+        # build the image
+        - sed -i "s|__image_tag__|${BITBUCKET_COMMIT}-prod|g" deployment-prod.yml
+        - sed -i 's|__env_name__|prod|g' deployment-prod.yml
+        - sed -i "s|__certificate__|arn:aws:acm:us-east-1:730335353789:certificate/42a3e1af-48ac-4bb4-9bce-cb5f4add4ce1|g" deployment-prod.yml
+        - docker build -t "template-keycloak:${BITBUCKET_COMMIT}-prod" .
+
+        # use the pipe to push the image to AWS ECR
+        - pipe: atlassian/aws-ecr-push-image:2.4.2
+          variables:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_DEFAULT_REGION: $ECR_REGION
+            IMAGE_NAME: 'template-keycloak'
+            TAGS: ${BITBUCKET_COMMIT}-prod
+
+        - pipe: atlassian/aws-eks-kubectl-run:2.8.1
+          variables:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+            CLUSTER_NAME: 'template-prod-eks'
+            KUBECTL_COMMAND: 'apply'
+            RESOURCE_PATH: 'deployment-prod.yml'

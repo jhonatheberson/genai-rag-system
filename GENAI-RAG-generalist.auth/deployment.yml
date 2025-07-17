@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: template
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: template
+  name: deployment-template-keycloak
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-template-keycloak
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-template-keycloak
+    spec:
+      containers:
+      - image: 730335353789.dkr.ecr.us-east-1.amazonaws.com/template-keycloak:__image_tag__
+        imagePullPolicy: Always
+        name: app-template-keycloak
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: 1
+          limits:
+            memory: 2Gi
+            cpu: 1
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - configMapRef:
+                name: config-template-keycloak
+          - secretRef:
+                name: secret-template-keycloak
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: template
+  name: service-template-keycloak
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: app-template-keycloak
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: template
+  name: ingress-template-keycloak
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: default-public
+    alb.ingress.kubernetes.io/certificate-arn: __certificate__
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+spec:
+  ingressClassName: alb
+  rules:
+    - host: template-keycloak.__env_name__.template.services
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: service-template-keycloak
+              port:
+                number: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-template-keycloak
+  namespace: template
+data:
+  KC_DB_URL: "jdbc:postgresql://postgres.__env_name__.template.services/keycloak"
+  KC_DB_USERNAME: "keycloak"
+  KC_DB: "postgres"
+  KC_PROXY: "edge"
+  KC_HOSTNAME_STRICT: "false"
+  KC_HOSTNAME: "template-keycloak.__env_name__.template.services"
