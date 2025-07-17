@@ -47,10 +47,25 @@ namespace API.Controllers
             return Ok(product);
         }
 
-        /// <summary>
-        /// Create a new product
+          /// <summary>
+        /// Get a product by group
         /// </summary>
-        [HttpPost]
+        [HttpGet("group/{group}")]
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ProductDto>> GetByGroup(string group)
+        {
+            var product = await _productService.GetByGroupAsync(group);
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
+        }
+
+    /// <summary>
+    /// Create a new product
+    /// </summary>
+    [HttpPost]
         [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ProductDto>> Create([FromBody] CreateProductRequest request)

@@ -37,14 +37,25 @@ namespace Application.Services
         }
 
         /// <summary>
-        /// Retrieves all products from the system
+        /// Retrieves a product by its unique identifier
         /// </summary>
-        /// <returns>A collection of product DTOs</returns>
-        public async Task<IEnumerable<ProductDto>> GetAllAsync()
+        /// <param name="id">The unique identifier of the product</param>
+        /// <returns>The product DTO if found, null otherwise</returns>
+        public async Task<ProductDto?> GetByGroupAsync(string group)
         {
-            var products = await _productRepository.GetAllAsync();
-            return ProductMapper.ToDto(products);
+            var product = await _productRepository.GetByGroup(group);
+            return product == null ? null : ProductMapper.ToDto(product);
         }
+
+        /// <summary>
+    /// Retrieves all products from the system
+    /// </summary>
+    /// <returns>A collection of product DTOs</returns>
+    public async Task<IEnumerable<ProductDto>> GetAllAsync()
+    {
+      var products = await _productRepository.GetAllAsync();
+      return ProductMapper.ToDto(products);
+    }
 
         /// <summary>
         /// Creates a new product in the system

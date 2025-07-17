@@ -22,9 +22,14 @@ namespace Infrastructure.Repositories
             return await _context.Products.FindAsync(id);
         }
 
+        public async Task<Product?> GetByGroup(string group)
+        {
+            return await _context.Products.FirstOrDefaultAsync(x => x.realm_id == group);
+        }
+
         public async Task<IEnumerable<Product>> GetAllAsync()
         {
-            return await _context.Products.ToListAsync();
+          return await _context.Products.ToListAsync();
         }
 
         public async Task<Product> AddAsync(Product product)

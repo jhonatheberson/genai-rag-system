@@ -8,6 +8,7 @@ namespace Domain.Interfaces
     public interface IProductRepository
     {
         Task<Product?> GetByIdAsync(Guid id);
+        Task<Product?> GetByGroup(string group);
         Task<IEnumerable<Product>> GetAllAsync();
         Task<Product> AddAsync(Product product);
         Task UpdateAsync(Product product);

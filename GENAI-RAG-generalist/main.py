@@ -67,10 +67,46 @@ if not st.session_state.authenticated:
 # If we get here, we're authenticated
 # Show user groups after login
 user_groups = keycloak.get_user_groups()
+product_data = None
+product_name = "MARTA"  # Valor padrão
 if user_groups:
-    st.info(f"Grupo(s) do usuário: {user_groups[0][1:]}")
+    # st.info(f"Grupo(s) do usuário: {user_groups[0][1:]}")
+    try:
+        group_name = user_groups[0][1:]
+        url = f"https://localhost:7186/api/Products/group/{group_name}"
+        response = requests.get(url, verify=False)  # Para dev, ignora SSL
+        if response.status_code == 200:
+            product_data = response.json()
+            # Atualiza dinamicamente as variáveis
+            assistant_id = product_data.get("assistant_id", "")
+            api_key = product_data.get("api_key", "")
+            product_name = product_data.get("name", "MARTA")
+            # Salva nos cookies
+            set_cookie("assistant_id", assistant_id, duration_days=1)
+            set_cookie("api_key", api_key, duration_days=1)
+            set_cookie("product_name", product_name, duration_days=1)
+            # Atualiza session_state
+            st.session_state["assistant_id"] = assistant_id
+            st.session_state["api_key"] = api_key
+            st.session_state["product_name"] = product_name
+        else:
+            st.warning(
+                f"Não foi possível obter dados do produto para o grupo: {group_name}"
+            )
+    except Exception as e:
+        st.warning(f"Erro ao buscar dados do produto: {str(e)}")
 else:
     st.info("Usuário não pertence a nenhum grupo.")
+    product_name = "MARTA"
+    st.session_state["product_name"] = product_name
+
+# Função utilitária para substituir 'MARTA' pelo nome do produto
+
+
+def replace_marta(text):
+    name = st.session_state.get("product_name", "MARTA")
+    return text.replace("MARTA", name)
+
 
 # data = {
 #     "grant_type": "authorization_code",
@@ -83,13 +119,6 @@ else:
 # Show the main application
 title = "RAG System"
 st.title(title)
-
-# Add logout button in the sidebar
-with st.sidebar:
-    if st.button("Logout"):
-        keycloak.logout()
-        st.session_state.authenticated = False
-        st.rerun()  # Force page reload after logout
 
 # Initialize session state
 if "conversation_manager" not in st.session_state:
@@ -133,6 +162,7 @@ if not st.session_state.welcome_message_shown:
         welcome_message = (
             f"👋 Hi {username}! Welcome to MARTA RAG System. How can I help you today?"
         )
+        welcome_message = replace_marta(welcome_message)
         st.session_state.conversation_manager.add_message(
             st.session_state.session_id,
             "assistant",
@@ -160,14 +190,26 @@ else:
     # Left sidebar with sticky MARTA logo
     with st.sidebar:
         try:
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            logo_path = os.path.join(current_dir, "MARTA-Logo.jpg")
-            st.image(logo_path, width=200)
+            logo_url = None
+            if (
+                "product_data" in locals()
+                and product_data
+                and product_data.get("urL_Logo")
+            ):
+                logo_url = product_data["urL_Logo"]
+            elif st.session_state.get("product_data") and st.session_state[
+                "product_data"
+            ].get("urL_Logo"):
+                logo_url = st.session_state["product_data"]["urL_Logo"]
+            if not logo_url:
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                logo_url = os.path.join(current_dir, "MARTA-Logo.jpg")
+            st.image(logo_url, width=200)
         except Exception as e:
             logger.error(f"Error loading logo: {str(e)}")
             st.warning("Unable to load MARTA logo")
 
-        st.subheader("MARTA RAG")
+        st.subheader(replace_marta("MARTA RAG"))
 
         # Navigation buttons
         col1, col2 = st.columns(2)
@@ -198,29 +240,29 @@ else:
         )  # Recupera o cookie ou retorna vazio se não existir
         assistant_id = get_cookie("assistant_id") or ""
 
-        # API key and Assistant ID input fields
-        api_key = st.text_input(
-            "API Key", value=api_key, type="password", help="Enter your OpenAI API key."
-        )
-        assistant_id = st.text_input(
-            "Assistant ID", value=assistant_id, help="Enter your Assistant ID."
-        )
+        # # API key and Assistant ID input fields
+        # api_key = st.text_input(
+        #     "API Key", value=api_key, type="password", help="Enter your OpenAI API key."
+        # )
+        # assistant_id = st.text_input(
+        #     "Assistant ID", value=assistant_id, help="Enter your Assistant ID."
+        # )
 
-        if st.button("Settings credentials"):
-            set_cookie(
-                "api_key", api_key, duration_days=1
-            )  # Define o cookie para 'api_key'
-            set_cookie(
-                "assistant_id", assistant_id, duration_days=1
-            )  # Define o cookie para 'assistant_id'
-            st.success("Credentials saved successfully!")
+        # if st.button("Settings credentials"):
+        #     set_cookie(
+        #         "api_key", api_key, duration_days=1
+        #     )  # Define o cookie para 'api_key'
+        #     set_cookie(
+        #         "assistant_id", assistant_id, duration_days=1
+        #     )  # Define o cookie para 'assistant_id'
+        #     st.success("Credentials saved successfully!")
 
     # Create two columns with 90/10 split for the main content
     col_chat, col_info = st.columns([0.90, 0.10])
 
     # Main chat area (90% width)
     with col_chat:
-        st.title("Neuai RAG")
+        st.title(replace_marta("Neuai RAG"))
 
         # Upload status container in main area
         if uploaded_files:
